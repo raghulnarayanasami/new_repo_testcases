@@ -8,7 +8,7 @@ class TestUrls(SimpleTestCase):
 
     def test_login_url_resloves(self):
         url = reverse('index')
-        self.assertEquals(resolve(url).func, user_login)
+        self.assertEquals(resolve(url).func, user_loginss)
 
     def test_s3bucket_url_resolves(self):
         url = reverse('s3bucket')
