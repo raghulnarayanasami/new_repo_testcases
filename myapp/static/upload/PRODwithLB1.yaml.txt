@@ -1,0 +1,58 @@
+heat_template_version: 2013-05-23
+
+parameters:
+  image_name: 
+    type: string 
+    label: Image Name 
+    default: ubuntu16
+  network_id:
+    type: string
+    default: af224b0b-0fbb-4f51-b766-6ed316f83fc1
+  security_group:
+    type: string
+    default: Apple_SG
+    description: The Web security group that will be utilized for all web servers
+       
+
+
+resources: 
+  Prod: 
+    type: OS::Nova::Server 
+    properties: 
+      image: { get_param: image_name } 
+      flavor: ci.medium 
+      networks:
+        - network : { get_param : network_id }
+      security_groups:
+        - { get_param: security_group }
+      availability_zone: us-east-az01a
+
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          params:
+            $output: $output
+          template: |
+            #!/bin/bash -v
+            echo "" >> /etc/resolv.conf
+            echo "nameserver 8.8.8.8 " >> /etc/resolv.conf
+            apt-get update
+            cd /root
+            apt-get install -y python-virtualenv
+            cd /root
+            virtualenv -p /usr/bin/python3 env
+            cd /root/env
+            source bin/activate
+            pip install django
+            pip install boto3
+            echo "" >> /etc/hosts
+            echo "172.31.190.20 aos.tcsecp.com " >> /etc/hosts
+
+
+  Pool_Member:
+    type: OS::Neutron::LBaaS::PoolMember
+    properties:
+        pool: 9bb68ce3-86ee-421e-9651-6f2495a75f2f
+        address: {get_attr: [Prod, first_address]}
+        subnet: 96a31683-10fa-45e9-a8b0-b8c48464ed43
+        protocol_port: 8000
