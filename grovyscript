@@ -1,0 +1,25 @@
+node {
+    // Mark the code checkout 'stage'....
+    stage 'Checkout'
+
+    // Get the code from a GitHub repository
+    git 'https://github.com/raghulnarayanasami/new_repo_testcases.git'
+    
+    stage 'Test'
+    
+    sh 'pwd'
+    //push code 
+    sshPublisher(publishers: [sshPublisherDesc(configName: 'prod', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''cd /root
+source env/bin/activate
+python manage.py test myapp''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/root', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '**/*')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+
+    sh label: '', script: 'whoami'
+    
+    stage "Build"
+    
+    sshPublisher(publishers: [sshPublisherDesc(configName: 'prod', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'bash /root/demo.sh', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/root', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '**/*')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)]) 
+    
+
+    
+
+}
